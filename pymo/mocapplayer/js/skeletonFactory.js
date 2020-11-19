@@ -200,10 +200,10 @@ var makeBoneGeometry_Cylinder1 = function(joint1Name, joint2Name, length, scale)
     return new THREE.CylinderGeometry(1.5 / scale, 0.7 / scale, length, 40);
 };
 
-var makeBoneGeometry_Cylinder2 = function(joint1Name, joint2Name, length, scale) {
+var makeBoneGeometry_Cylinder2 = function(joint1Name, joint2Name, length, scale) {  // joint1Name should be parent
     // if (joint1Name.includes("LeftHip"))
     //     length = 400;
-    return new THREE.CylinderGeometry(1.5 / scale, 0.2 / scale, length, 40);   
+    return new THREE.CylinderGeometry(1.5 / scale, 0.2 / scale, length, 40);  // radiusTop, radiusBottom, height, radialSegments, heightSegments 
 };
 
 var makeBoneGeometry_Cylinder3 = function(joint1Name, joint2Name, length, scale) {

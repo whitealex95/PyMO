@@ -124,6 +124,31 @@ By Omid Alemi
             scene.add(light);
         }
 
+        function add_floor_theo() {
+            var textureLoader = new THREE.TextureLoader();
+
+            var texture = textureLoader.load('theo_floor1.jpg', function(tt) {    
+            });
+
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.repeat = new THREE.Vector2(1,1.66);
+
+
+            var material = new THREE.MeshPhongMaterial({
+                color: 0xffffff,
+                specular: 0xffffff,
+                shininess: 100,
+                map: texture,
+
+            });
+            var geometry = new THREE.CubeGeometry(300, 300, 5);
+
+            var mesh = new THREE.Mesh(geometry, material);
+            mesh.position.y = -2;
+            mesh.rotation.x = -Math.PI / 2;
+            scene.add(mesh);
+        }
 
         function init(cz) {
             scene = new THREE.Scene();
@@ -135,14 +160,14 @@ By Omid Alemi
             // set_the_scene3();
         }
 
-        // Load BVH       
         function loadBVHFile(bvhURL, cname, jm, bm, scale) {            
 
-            var c2 = new BVHCharacter(cname, jm, bm, makeJointGeometry_Dode, makeBoneGeometry_Cylinder2); // JointGeometry=Dode, BoneGeometry=Cylinder
-            console.log(c2.name, jm, bm)  // jm: joint material, bm: bone material
+            var c2 = new BVHCharacter(cname, jm, bm, makeJointGeometry_Dode, makeBoneGeometry_Cylinder2);
+            console.log(c2.name, jm, bm)
             // c2.setOriginPosition(0, 0, 0);
             c2.skelScale = scale;
-            c2.loadFromURL(bvhURL, function() {  // load skeleton
+            c2.loadFromURL(bvhURL, function() {
+                console.log('load done')
                 scene.add(c2.skeleton);
             });
 
@@ -207,7 +232,6 @@ By Omid Alemi
         }
 
 
-        // MAIN LOOP testkim
         $(document).ready(function () {            
             console.log('ready');
             var dataURL = getUrlParameter('data_url');                 
@@ -216,9 +240,6 @@ By Omid Alemi
             var cz = getUrlParameter('cz');
             var scale = getUrlParameter('scale');
             var frameTime = getUrlParameter('frame_time');
-            
-            // when is 'order' used?  testkim
-            var order = getUrlParameter('order');
             
             if (cz === undefined)
                 cz = 550;
@@ -231,67 +252,28 @@ By Omid Alemi
             
             init(cz);
             add_basic_lights();
-            add_floor_grid();
-
+            add_floor_theo();
             initRenderer();
             console.log(dataURL); 
             if (dataURL !==  undefined) {                                
+                console.log("Loading " + dataURL);
+                
                 if (dataURL.endsWith('.bvh')){
                     console.log('loading bvh')
                     loadBVHFile(dataURL, 'Fig', jm_a, bm_a, scale); 
                 }             
                 else if (dataURL.endsWith('.csv')){
-                    loadPosFile(dataURL, 'Fig', jm_a, bm_a, scale, frameTime);
+                    loadPosFile(dataURL, 'Fig', jm_a, bm_a, scale, frameTime); alert('fuck');
                 }
                 else
                     console.error('Unsupport file.');
             }
             
             
+
             animate();
         });
 
-        function add_floor_grid(){
-            // Create a grid for the floor
-			var size = 400,
-				step = 40;
-
-            // Draw the plane
-			var planeGeometry = new THREE.PlaneGeometry(size * 2, size * 2);
-			var planeMaterial = new THREE.MeshPhongMaterial({
-				color: 0x212121,
-				emissive: 0x333333,
-				specular: 0x222222,
-				side: THREE.DoubleSide,
-				transparent: true,
-				opacity: 0.3
-			});
-			var plane = new THREE.Mesh(planeGeometry, planeMaterial);
-			plane.position.set(0, 0, 0);
-			plane.rotation.set(math.pi / 2, 0, 0);
-			scene.add(plane);
-
-            //Draw the lines
-			var lineGeometry = new THREE.Geometry();
-			var lineMaterial = new THREE.LineBasicMaterial({
-				color: 0x333333,
-				linewidth: 1.2
-			});
-			for (var i = -size; i <= size; i += step) {
-				lineGeometry.vertices.push(new THREE.Vector3(-size, -0.04, i));
-				lineGeometry.vertices.push(new THREE.Vector3(size, -0.04, i));
-				lineGeometry.vertices.push(new THREE.Vector3(i, -0.04, -size));
-				lineGeometry.vertices.push(new THREE.Vector3(i, -0.04, size));
-			}
-
-			var line = new THREE.LineSegments(lineGeometry, lineMaterial);
-            scene.add(line);
-            
-	        var axisHelper = new THREE.AxisHelper( 100 );
-	        scene.add( axisHelper );
-            //
-            
-        }
         
     </script>
 </body>

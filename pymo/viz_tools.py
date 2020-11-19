@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import IPython
 import os
+from pymo.writers import BVHWriter
 
 def save_fig(fig_id, tight_layout=True):
     if tight_layout:
@@ -163,8 +164,110 @@ def print_skel(X):
         for c in X.skeleton[joint]['children']:
             stack.append(c)
 
+def nb_play_charamocap_fromurl(mocap, obj, skin, mf, frame_time=1/30, scale=1, base_url=None):
+    if base_url is None:
+        base_url = os.path.join(dir_path, 'mocapplayer/playURL.html')
 
-def nb_play_mocap_fromurl(mocap, mf, frame_time=1/30, scale=1, base_url='http://titan:8385'):
+    if mf == 'bvh':
+        bw = BVHWriter()
+        with open('test.bvh', 'w') as ofile:
+            bw.write(mocap, ofile)
+
+        filepath = '/files/demos/test.bvh'
+    elif mf == 'pos':
+        c = list(mocap.values.columns)
+
+        for cc in c:
+            if 'rotation' in cc:
+                c.remove(cc)
+        mocap.values.to_csv('test.csv', index=False, columns=c)
+        
+        filepath = '../notebooks/test.csv'
+    else:
+        return
+    
+    url = '%s?data_url=%s&scale=%f&cz=200&order=xzyi&frame_time=%f'%(base_url, filepath, scale, frame_time)
+    iframe = '<iframe src=' + url + ' width="100%" height=500></iframe>'
+    link = '<a href=%s target="_blank">New Window</a>'%url
+    return IPython.display.HTML(iframe+link)
+
+def nb_play_mocap_fromurl(mocap, mf, frame_time=1/30, scale=1, base_url=None):
+    if base_url is None:
+        base_url = os.path.join(dir_path, 'mocapplayer/playBuffer.html')
+
+    if mf == 'bvh':
+        bw = BVHWriter()
+        with open('test.bvh', 'w') as ofile:
+            bw.write(mocap, ofile)
+
+        filepath = '/files/demos/test.bvh'
+    elif mf == 'pos':
+        c = list(mocap.values.columns)
+
+        for cc in c:
+            if 'rotation' in cc:
+                c.remove(cc)
+        mocap.values.to_csv('test.csv', index=False, columns=c)
+        
+        filepath = '../notebooks/test.csv'
+    else:
+        return
+    
+    url = '%s?data_url=%s&scale=%f&cz=200&order=xzyi&frame_time=%f'%(base_url, filepath, scale, frame_time)
+    iframe = '<iframe src=' + url + ' width="100%" height=500></iframe>'
+    link = '<a href=%s target="_blank">New Window</a>'%url
+    return IPython.display.HTML(iframe+link)
+
+def nb_play_mocap(mocap, mf, meta=None, frame_time=1/30, scale=1, camera_z=500, base_url=None):
+    data_template = 'var dataBuffer = `$$DATA$$`;'
+    data_template += 'var metadata = $$META$$;'
+    data_template += 'start(dataBuffer, metadata, $$CZ$$, $$SCALE$$, $$FRAMETIME$$);'
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    print(dir_path)
+
+    if base_url is None:
+        base_url = os.path.join(dir_path, 'mocapplayer/playBuffer.html')
+    
+    # print(dir_path)
+
+    if mf == 'bvh':
+        pass
+    elif mf == 'pos':
+        cols = list(mocap.values.columns)
+        for c in cols:
+            if 'rotation' in c:
+                cols.remove(c)
+        
+        data_csv = mocap.values.to_csv(index=False, columns=cols)
+
+        if meta is not None:
+            lines = [','.join(item) for item in meta.astype('str')]
+            meta_csv = '[' + ','.join('[%s]'%l for l in lines) +']'            
+        else:
+            meta_csv = '[]'
+        # print(data_csv)
+        # print(meta_csv)
+        # print(scale)
+        data_assigned = data_template.replace('$$DATA$$', data_csv)
+        data_assigned = data_assigned.replace('$$META$$', meta_csv)
+        data_assigned = data_assigned.replace('$$CZ$$', str(camera_z))
+        data_assigned = data_assigned.replace('$$SCALE$$', str(scale))
+        data_assigned = data_assigned.replace('$$FRAMETIME$$', str(frame_time))
+
+    else:
+        return
+    
+    
+
+    with open(os.path.join(dir_path, 'mocapplayer/data.js'), 'w') as oFile:
+        oFile.write(data_assigned)
+
+    url = '%s?&cz=200&order=xzyi&frame_time=%f&scale=%f'%(base_url, frame_time, scale)
+    iframe = '<iframe frameborder="0" src=' + url + ' width="100%" height=500></iframe>'
+    link = '<a href=%s target="_blank">New Window</a>'%url
+    return IPython.display.HTML(iframe+link)
+
+def nb_play_mocap_fromurl_bk(mocap, mf, frame_time=1/30, scale=1, base_url='http://titan:8385'):
     if mf == 'bvh':
         bw = BVHWriter()
         with open('test.bvh', 'w') as ofile:
@@ -188,7 +291,7 @@ def nb_play_mocap_fromurl(mocap, mf, frame_time=1/30, scale=1, base_url='http://
     link = '<a href=%s target="_blank">New Window</a>'%url
     return IPython.display.HTML(iframe+link)
 
-def nb_play_mocap(mocap, mf, meta=None, frame_time=1/30, scale=1, camera_z=500, base_url=None):
+def nb_play_mocap_bk(mocap, mf, meta=None, frame_time=1/30, scale=1, camera_z=500, base_url=None):
     data_template = 'var dataBuffer = `$$DATA$$`;'
     data_template += 'var metadata = $$META$$;'
     data_template += 'start(dataBuffer, metadata, $$CZ$$, $$SCALE$$, $$FRAMETIME$$);'

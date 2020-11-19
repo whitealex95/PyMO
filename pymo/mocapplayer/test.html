@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script src="libs/jquery.min.js"></script>
+    <script type="text/javascript">
+        // WINDOW management
+        var characters = [];
+        var playing = false;
+
+
+        $(document).on("keypress", function(e) {
+            if (e.charCode == 32)
+                playing = !playing;
+
+            characters.forEach(function(c) {
+                c.playing = playing;
+
+                if (playing)
+                    c.animStartTimeRef = Date.now();
+                else
+                    c.animOffset = c.animIndex;
+            });
+
+        });
+
+        $(window).on("resize", function(e) {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+
+           renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        var getUrlParameter = function getUrlParameter(sParam) {
+        var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+            sURLVariables = sPageURL.split('&'),
+            sParameterName,
+            i;
+
+        for (i = 0; i < sURLVariables.length; i++) {
+            sParameterName = sURLVariables[i].split('=');            
+            if (sParameterName[0] === sParam) {
+                return sParameterName[1] === undefined ? true : sParameterName[1];
+            }
+        }
+    };
+    </script>
+
+
+    <script type="module">
+        import * as THREE from 'https://unpkg.com/three@0.122.0/build/three.module.js';
+        import { OrbitControls } from 'https://unpkg.com/three@0.122.0/examples/jsm/controls/OrbitControls.js';
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, 4000);
+        camera.position.set(0, 80, 0);
+        // camera.position.z = cz;
+        scene.add(camera);
+        const renderer = new THREE.WebGLRenderer({
+            antialias: true
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        //renderer.setSize(600, 500);
+        renderer.gammaInput = true;
+        renderer.gammaOutput = true;
+        renderer.setPixelRatio(window.devicePixelRatio);
+        // renderer.setClearColor(0xdddddd, 1);
+        renderer.setClearColor(0xffffff, 1);
+
+        
+        document.body.appendChild(renderer.domElement);
+
+
+
+        const geometry = new THREE.BoxBufferGeometry( 1, 1, 1 );
+const material = new THREE.MeshBasicMaterial( { color: 0xffff00 } );
+const mesh = new THREE.Mesh( geometry, material );
+scene.add( mesh );
+const controls = new OrbitControls(camera, renderer.domElement);
+
+    </script>
+</body>
+</html>

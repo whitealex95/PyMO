@@ -43,7 +43,12 @@ class BVHWriter():
 
         if n_channels > 0:
             for ch in channels:
-                self.motions_.append(np.asarray(X.values['%s_%s'%(joint, ch)].values))
+                try:
+                    self.motions_.append(np.asarray(X.values['%s_%s'%(joint, ch)].values))
+                except:
+                    print('%s_%s'%(joint, ch))
+                    print(X.values)
+                    raise NotImplementedError
 
         if len(X.skeleton[joint]['children']) > 0:
             ch_str = ''.join(' %s'*n_channels%tuple(channels))

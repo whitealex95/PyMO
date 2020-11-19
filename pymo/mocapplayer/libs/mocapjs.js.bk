@@ -81,7 +81,7 @@
 	var BVHCharacter = BVHCharacter || {};
 	
 	
-	BVHCharacter = function(n, jm, bm, jg, bg) {  // constructor
+	BVHCharacter = function(n, jm, bm, jg, bg) {
 	    this.name = n;
 	
 	    this.jointMaterial = jm;
@@ -130,7 +130,7 @@
 			console.log(this.name + "READER")
 	        reader = new parsers.bvhParser(this.name + "READER");
 	        this.url = url;
-			reader.load(url, self.createSkel, self.fillFrames);  // run self.createSkel after loading
+			reader.load(url, self.createSkel, self.fillFrames);
 			console.log(reader)
 	
 	        this.callb = callback;
@@ -153,11 +153,11 @@
 	        self.log("Mocap file loaded.");
 	
 			self.log("Creating the WebGL Joints.");
+			console.log(self.bvh)
 	        self.buildSkelJoints(self.bvh.getSkeleton(), 0);
 	
 	        self.log("Creating the WebGL Bones.");
-			self.buildSkelBones(self.jointMeshes[0]);
-			// console.log(self.jointMeshes.length)  // 30 (25+5 including endsites)
+	        self.buildSkelBones(self.jointMeshes[0]);
 	        
 	        self.skeleton.add(self.jointMeshes[0]);
 	        self.setSkeletonScale(self.skelScale);
@@ -265,7 +265,7 @@
 	        self.jointMeshes[0].position.multiplyScalar(s);
 	    };
 	
-	    this.buildSkelJoints = function(joint, parent) {  // parent=0 : root, parent=1: non-root
+	    this.buildSkelJoints = function(joint, parent) {
 	        var jointMesh = new THREE.Mesh(self.makeJointGeometryFCN(joint.name, self.skelScale), self.jointMaterial);
 	        jointMesh.bvhIndex = joint.jointIndex;
 	        jointMesh.offsetVec = new THREE.Vector3(joint.offset[0], joint.offset[1], joint.offset[2]);
@@ -277,14 +277,13 @@
 	            b = joint.channelNames[joint.channelNames.length - 2][0];
 	            c = joint.channelNames[joint.channelNames.length - 1][0];
 	        }
-			jointMesh.rotOrder = a + b + c;
-			// console.log(jointMesh.rotOrder)  // XYZ, NaN(for ee)
+	        jointMesh.rotOrder = a + b + c;
 	        self.jointMeshes.push(jointMesh);
 	        
 	        jointMesh.position.set(jointMesh.offsetVec.x, jointMesh.offsetVec.y, jointMesh.offsetVec.z);
 	        
-	        var axisHelper = new THREE.AxisHelper( 10 / self.skelScale );
-	        jointMesh.add( axisHelper );
+	        // var axisHelper = new THREE.AxisHelper( 10 / self.skelScale );
+	        // jointMesh.add( axisHelper );
 	
 	
 	        joint.children.forEach(function(child) {
@@ -307,24 +306,56 @@
 	                var bgeometry = self.makeBoneGeometryFCN(childJointMesh.parent.name, childJointMesh.name, h, self.skelScale);
 	                
 	                //BEGIN - Universal      
-					if (childJointMesh.offsetVec.y !== 0)                                               
-					{
+	                if (childJointMesh.offsetVec.y !== 0)                                               
 	                    // bgeometry.translate(0, Math.sign(childJointMesh.offsetVec.y) * h / 2, 0);
 	                    bgeometry.translate(0, -h/2, 0);
-					}
 	                else                                
 	                    bgeometry.translate(0, -h / 2,  0);
 	                    
-					bgeometry.rotateX(-Math.PI/2)
-					bgeometry.lookAt(childJointMesh.offsetVec)
-
-					var boneMesh = new THREE.Mesh(bgeometry, self.boneMaterial);                
-					
-					boneMesh.joint = childJointMesh.parent;
-					boneMesh.name = childJointMesh.parent.name + " > " + childJointMesh.name;
-
-					childJointMesh.parent.add(boneMesh);                               
-					self.boneMeshes.push(boneMesh);                
+	                               
+	                dx = Math.atan2(childJointMesh.offsetVec.z,childJointMesh.offsetVec.y);                  
+	                dy = Math.atan2(childJointMesh.offsetVec.x,childJointMesh.offsetVec.z);
+	                dz = Math.atan2(childJointMesh.offsetVec.x,childJointMesh.offsetVec.y);   
+	   
+	   
+	                osx = math.sign(childJointMesh.offsetVec.x) === 0 ? 0: math.sign(childJointMesh.offsetVec.x);
+	                osy = math.sign(childJointMesh.offsetVec.y) === 0 ? 0: math.sign(childJointMesh.offsetVec.y);
+	                osz = math.sign(childJointMesh.offsetVec.z) === 0 ? 0: math.sign(childJointMesh.offsetVec.z);
+	
+	                osxy = math.sign(childJointMesh.offsetVec.x) === 0 ? 0: math.sign(childJointMesh.offsetVec.y);
+	                osyx = math.sign(childJointMesh.offsetVec.y) === 0 ? 0: math.sign(childJointMesh.offsetVec.x);
+	                osyz = math.sign(childJointMesh.offsetVec.y) === 0 ? 0: math.sign(childJointMesh.offsetVec.z);
+	                oszy = math.sign(childJointMesh.offsetVec.z) === 0 ? 0: math.sign(childJointMesh.offsetVec.y);
+	
+	                
+	                if (osz <0)
+	                    bgeometry.rotateZ(1*(math.pi-dz));
+	                else if (osz === 0)
+	                    bgeometry.rotateZ(1*(math.pi-dz));
+	                    // console.log();  
+	                else if (osz > 0)
+	                    bgeometry.rotateZ(1*(2*math.pi-dz));
+	
+	
+	                if (oszy >0)
+	                    bgeometry.rotateX(-1 *(2*math.pi-dx));
+	                else if (childJointMesh.offsetVec.z === 0)
+	                    // bgeometry.rotateX(-1*(math.pi-dx));
+	                    console.log();
+	                else if (oszy < 0)
+	                    bgeometry.rotateX(-1*(2*math.pi-dx));
+	                                                            
+	                //  bgeometry.rotateY(math.pi-dy);
+	                                                  
+	                //END - Universal
+	                
+	                var boneMesh = new THREE.Mesh(bgeometry, self.boneMaterial);                
+	                
+	                boneMesh.joint = childJointMesh.parent;
+	                boneMesh.name = childJointMesh.parent.name + " > " + childJointMesh.name;
+	                
+	                childJointMesh.parent.add(boneMesh);                               
+	                self.boneMeshes.push(boneMesh);                
 	            }
 	        });      
 	    };
