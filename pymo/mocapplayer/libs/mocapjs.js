@@ -429,7 +429,7 @@
 	var BVHReader = function () {
 	    this.load = function (url, callbackHeader, callbackFrameArray) {
 	        $.get({url: url, crossDomain: true}, function (str) {  // added for cors setting... testkim
-	            console.log(str)
+	            // console.log(str)
 	            var dataReturn = parse(str);
 	
 	            

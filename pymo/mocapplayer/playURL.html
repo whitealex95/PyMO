@@ -19,6 +19,9 @@ By Omid Alemi
     <script src="libs/jquery.min.js"></script>
     <script src="libs/threejs/three.min.js"></script>
     <script src="libs/threejs/OrbitControls.js"></script>
+    <script src="https://unpkg.com/three@0.82.0/examples/js/loaders/OBJLoader.js"></script>
+    
+
     <script src="libs/papaparse.min.js"></script>
 
     <script src="libs/mocapjs.js", type="application/javascript"></script>
@@ -69,8 +72,9 @@ By Omid Alemi
         }
     };
     </script>
+    <script type='module'>
+        // import {OBJLoader} from 'https://unpkg.com/three@0.82.0/examples/js/loaders/OBJLoader.js';
 
-    <script>
         var scene, camera, renderer;
         var geometry, material, mesh;
         var played_count = 0;
@@ -134,12 +138,27 @@ By Omid Alemi
 
             // set_the_scene3();
         }
-
-        // Load BVH       
+        // Load OBJ file
+        function loadOBJFiles(objURL, scale){
+            if (objURL === undefined){
+                objURL = '/files/demos/data/kaya/bindpose.obj'
+            }
+            const loader = new THREE.OBJLoader()
+            loader.load(objURL, function(obj) {
+                console.log(obj.state, obj.data, (obj.children[0]) )
+                obj.children[0].geometry.scale(scale, scale, scale)
+                console.log(typeof(obj))
+                scene.add(obj);
+            }, function(xhr) {
+                console.log((xhr.loaded / xhr.total * 100) +  '% loaded');
+            }, function(error) {
+                console.log('An error happend')
+            });
+        }
         function loadBVHFile(bvhURL, cname, jm, bm, scale) {            
 
             var c2 = new BVHCharacter(cname, jm, bm, makeJointGeometry_Dode, makeBoneGeometry_Cylinder2); // JointGeometry=Dode, BoneGeometry=Cylinder
-            console.log(c2.name, jm, bm)  // jm: joint material, bm: bone material
+            // console.log(c2.name, jm, bm)  // jm: joint material, bm: bone material
             // c2.setOriginPosition(0, 0, 0);
             c2.skelScale = scale;
             c2.loadFromURL(bvhURL, function() {  // load skeleton
@@ -174,7 +193,7 @@ By Omid Alemi
             
             document.body.appendChild(renderer.domElement);
 
-           controls = new THREE.OrbitControls(camera, renderer.domElement);
+           var controls = new THREE.OrbitControls(camera, renderer.domElement);
         }
 
         function animate() {
@@ -211,8 +230,6 @@ By Omid Alemi
         $(document).ready(function () {            
             console.log('ready');
             var dataURL = getUrlParameter('data_url');                 
-            console.log(dataURL)
-            console.log(dataURL)
             var cz = getUrlParameter('cz');
             var scale = getUrlParameter('scale');
             var frameTime = getUrlParameter('frame_time');
@@ -234,19 +251,18 @@ By Omid Alemi
             add_floor_grid();
 
             initRenderer();
+            loadOBJFiles(undefined,scale);
             console.log(dataURL); 
-            if (dataURL !==  undefined) {                                
-                if (dataURL.endsWith('.bvh')){
-                    console.log('loading bvh')
-                    loadBVHFile(dataURL, 'Fig', jm_a, bm_a, scale); 
-                }             
-                else if (dataURL.endsWith('.csv')){
-                    loadPosFile(dataURL, 'Fig', jm_a, bm_a, scale, frameTime);
-                }
-                else
-                    console.error('Unsupport file.');
+            if (dataURL.endsWith('.bvh')){
+                console.log('loading bvh')
+                loadBVHFile(dataURL, 'Fig', jm_a, bm_a, scale); 
+            }             
+            else if (dataURL.endsWith('.csv')){
+                loadPosFile(dataURL, 'Fig', jm_a, bm_a, scale, frameTime);
             }
-            
+            else{
+                console.error('Unsupport file.');
+            }
             
             animate();
         });
