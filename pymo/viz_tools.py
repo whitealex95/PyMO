@@ -164,7 +164,7 @@ def print_skel(X):
         for c in X.skeleton[joint]['children']:
             stack.append(c)
 
-def nb_play_charamocap_fromurl(mocap, obj, skin, mf, frame_time=1/30, scale=1, base_url=None):
+def nb_play_charamocap_fromurl(mocap, obj_url, skin_url, mf, frame_time=1/30, scale=1, base_url=None):
     if base_url is None:
         base_url = os.path.join(dir_path, 'mocapplayer/playURL.html')
 
@@ -172,18 +172,19 @@ def nb_play_charamocap_fromurl(mocap, obj, skin, mf, frame_time=1/30, scale=1, b
         bw = BVHWriter()
         with open('test.bvh', 'w') as ofile:
             bw.write(mocap, ofile)
-
         filepath = '/files/demos/test.bvh'
-    elif mf == 'pos':
-        c = list(mocap.values.columns)
 
-        for cc in c:
-            if 'rotation' in cc:
-                c.remove(cc)
-        mocap.values.to_csv('test.csv', index=False, columns=c)
+    # elif mf == 'pos':
+    #     c = list(mocap.values.columns)
+
+    #     for cc in c:
+    #         if 'rotation' in cc:
+    #             c.remove(cc)
+    #     mocap.values.to_csv('test.csv', index=False, columns=c)
         
-        filepath = '../notebooks/test.csv'
+    #     filepath = '../notebooks/test.csv'
     else:
+        raise NotImplementedError
         return
     
     url = '%s?data_url=%s&scale=%f&cz=200&order=xzyi&frame_time=%f'%(base_url, filepath, scale, frame_time)

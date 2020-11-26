@@ -138,8 +138,9 @@ By Omid Alemi
 
             // set_the_scene3();
         }
-        // Load OBJ file
+        // Load OBJ file testkim
         function loadOBJFiles(objURL, scale){
+            console.log("Loading OBJ");
             if (objURL === undefined){
                 objURL = '/files/demos/data/kaya/bindpose.obj'
             }
@@ -148,13 +149,43 @@ By Omid Alemi
                 console.log(obj.state, obj.data, (obj.children[0]) )
                 obj.children[0].geometry.scale(scale, scale, scale)
                 console.log(typeof(obj))
+                console.log(obj.position)
                 scene.add(obj);
             }, function(xhr) {
                 console.log((xhr.loaded / xhr.total * 100) +  '% loaded');
             }, function(error) {
-                console.log('An error happend')
+                console.log('[Error] loading obj')
             });
         }
+
+        // Load csvFile testkim
+        function loadSkinFiles(csvURL) {
+            console.log("Loading CSV(skin)");
+            if (csvURL == undefined) {
+                csvURL = '/files/demos/data/kaya/skin.csv'
+            }
+            let skin;
+            console.log('sibal_before', csvURL);
+            Papa.parse(csvURL, {
+				worker: false,
+				delimiter: ",",	
+				dynamicTyping: true,
+				download: true,
+				header: false,
+				complete: function(results) {
+                    console.log('parse complete')
+                    skin = results;
+                    console.log(skin);
+					// if (callback)
+					// 	callback();
+				}
+            });
+            console.log('sibal');
+
+            // TODO
+        }
+
+
         function loadBVHFile(bvhURL, cname, jm, bm, scale) {            
 
             var c2 = new BVHCharacter(cname, jm, bm, makeJointGeometry_Dode, makeBoneGeometry_Cylinder2); // JointGeometry=Dode, BoneGeometry=Cylinder
@@ -252,6 +283,7 @@ By Omid Alemi
 
             initRenderer();
             loadOBJFiles(undefined,scale);
+            loadSkinFiles(undefined);
             console.log(dataURL); 
             if (dataURL.endsWith('.bvh')){
                 console.log('loading bvh')
